@@ -1,32 +1,42 @@
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { Box, Flex, Button, useDisclosure, Table, Thead, Tr, Th, Tbody, Td, useBreakpointValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
-import { ModalComp } from "./components/ModalComp";
+import { FormModal } from "./components/FormModal";
 
 export function App() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [data, setData] = useState([]);
     const [dataEdit, setDataEdit] = useState({});
+    const [refresh, setRefresh] = useState(false);
     
     const isMobile = useBreakpointValue({ base: true, lg: false });
-
-    useEffect(() => {
-        const data = localStorage.getItem("data")
-            ?JSON.parse(localStorage.getItem("data"))
-            : [];
-        setData(data);
-    }, [setData]);
-
-    const handleRemove = (id) => {
-        const newData = data.filter((item) => item.id !== id);
-
-        setData(newData);
-
-        localStorage.setItem("data", JSON.stringify(newData));
+    
+    function handleRefresh() {
+        setRefresh(!refresh);
+    }
+    
+    async function getData() {
+        await axios.get("http://127.0.0.1:8000/users/list")
+            .then(response => {
+                setData(response.data);
+            })
+            .catch(error => {
+                console.log(error);
+            });
     }
 
-    
+    async function handleRemove(id){
+        console.log(id);
+        await axios.delete("http://127.0.0.1:8000/users/delete/" + id);
+        handleRefresh();
+    }
+
+    useEffect(() => {
+        getData();
+    }, [refresh]);
+
     return (
         <Flex
             h="100vh"
@@ -34,8 +44,9 @@ export function App() {
             justify="center"
             fontSize="20px"
             fontFamily="poppins"
+            background="gray.100"
         >
-            <Box maxW={1000} w="100%" h="100vh" py={10} px={2}>
+            <Box maxW={1200} w="100%" h="100vh" py={10} px={2}>
                 <Button colorScheme="blue" onClick={() => [setDataEdit({}), onOpen()]}>
                 NOVO CADASTRO
                 </Button>
@@ -52,16 +63,16 @@ export function App() {
                                 <Th maxW={isMobile ? 5 : 100} fontSize="20px">
                                     Email
                                 </Th>
-                                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                                {/* <Th maxW={isMobile ? 5 : 100} fontSize="20px">
                                     Senha
-                                </Th>
+                                </Th> */}
                                 <Th p={0}></Th>
                                 <Th p={0}></Th>
                             </Tr>
                         </Thead>
                         <Tbody>
                             {data.map(({ id, name, email, password }, index) => (
-                                <Tr key={index} cursor="pointer" _hover={{ bg: "gray.100" }}>
+                                <Tr key={id} cursor="pointer" _hover={{ bg: "gray.100" }}>
                                     <Td maxW={isMobile ? 5 : 100}>{ id }</Td>
                                     <Td maxW={isMobile ? 5 : 100}>{ name }</Td>
                                     <Td maxW={isMobile ? 5 : 100}>{ email }</Td>
@@ -88,13 +99,14 @@ export function App() {
                 </Box>
             </Box>
             {isOpen && (
-                <ModalComp
+                <FormModal
                     isOpen={isOpen}
                     onClose={onClose}
                     data={data}
                     setData={setData}
                     dataEdit={dataEdit}
                     setDataEdit={setDataEdit}
+                    handleRefresh={handleRefresh}
                 />
             )}
         </Flex>

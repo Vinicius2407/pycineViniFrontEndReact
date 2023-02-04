@@ -13,49 +13,50 @@ import {
     Box,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import axios from "axios";
 
-export function ModalComp({ data, setData, dataEdit, isOpen, onClose }) {
+export function FormModal({ dataEdit, isOpen, onClose, handleRefresh }) {
     const [name, setName] = useState(dataEdit.name || "");
     const [email, setEmail] = useState(dataEdit.email || "");
-    const [password, setPassword] = useState(dataEdit.password || "");
+    const [editPassword] = useState(dataEdit.password || "");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+
+    async function handleSave() {
+        if (dataEdit.id && editPassword !== "" && password === editPassword) {
+            await axios.put(`http://127.0.0.1:8000/user/update`, {
+            id: dataEdit.id,
+            name,
+            email,
+            password
+            });
+        } else if (dataEdit.id === undefined) {
+            if (!name || !email || !password) {
+                alert("Preencha todos os campos");
+            }
+
+            const response = await axios.post("http://127.0.0.1:8000/user/create", {
+                name,
+                email,
+                password,
+            });
     
-    const handleSave = () => {
-        if (!name || !email || !password) {
-            alert("Preencha todos os campos!");
-            return;
+            if (response.status !== 200) {
+                alert("Email já cadastrado");
+            } 
         }
-
-        if (emailAlreadyExists()) {
-            return alert("Email já cadastrado!");
-        }
-
-        if (Object.keys(dataEdit).length) {
-            data[dataEdit.index] = { name, email, password };
-        }
-
-        const newDataArray = !Object.keys(dataEdit).length
-            ? [...(data ? data : []), { name, email, password }]
-            : [...(data ? data : [])];
-        
-        localStorage.setItem("data", JSON.stringify(newDataArray));
-
-        setData(newDataArray);
-
+        handleRefresh();
         onClose();
-    }
+    } 
 
-    const emailAlreadyExists = () => {
-        if (dataEdit.email !== email && data?.length) {
-            return data.find((item) => item.email === email);
-        }
-    }
+    const verificacao = dataEdit.id ? "Editar" : "Novo Cadastro";
 
     return (
         <>
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Cadastro de Clientes</ModalHeader>
+                    <ModalHeader>{verificacao}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <FormControl display="flex" flexDir="column" gap={4}>
@@ -76,12 +77,15 @@ export function ModalComp({ data, setData, dataEdit, isOpen, onClose }) {
                                 />
                             </Box>
                             <Box>
-                                <FormControl>Senha</FormControl>
+                                <FormControl>{editPassword !== "" ? "Coloque a senha para editar" : "Insira a Senha"}</FormControl>
                                 <Input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
+                                <Button onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? "Ocultar" : "Mostrar"} Senha
+                                </Button>
                             </Box>
                         </FormControl>
                     </ModalBody>
