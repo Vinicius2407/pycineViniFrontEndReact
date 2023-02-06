@@ -11,8 +11,6 @@ export function App() {
     const [dataEdit, setDataEdit] = useState({});
     const [refresh, setRefresh] = useState(false);
     
-    const isMobile = useBreakpointValue({ base: true, lg: false });
-    
     function handleRefresh() {
         setRefresh(!refresh);
     }
@@ -54,13 +52,13 @@ export function App() {
                     <Table mt="6">
                         <Thead>
                             <Tr>
-                                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                                <Th maxW={100} fontSize="20px">
                                     ID
                                 </Th>
-                                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                                <Th maxW={100} fontSize="20px">
                                     Nome
                                 </Th>
-                                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                                <Th maxW={100} fontSize="20px">
                                     Email
                                 </Th>
                                 {/* <Th maxW={isMobile ? 5 : 100} fontSize="20px">
@@ -73,10 +71,10 @@ export function App() {
                         <Tbody>
                             {data.map(({ id, name, email, password }, index) => (
                                 <Tr key={id} cursor="pointer" _hover={{ bg: "gray.100" }}>
-                                    <Td maxW={isMobile ? 5 : 100}>{ id }</Td>
-                                    <Td maxW={isMobile ? 5 : 100}>{ name }</Td>
-                                    <Td maxW={isMobile ? 5 : 100}>{ email }</Td>
-                                    <Td maxW={isMobile ? 5 : 100}></Td>
+                                    <Td maxW={100}>{ id }</Td>
+                                    <Td maxW={100}>{ name }</Td>
+                                    <Td maxW={100}>{ email }</Td>
+                                    {/* <Td maxW={100}></Td> */}
                                     <Td p={0}>
                                         <EditIcon
                                             fontSize={20}
